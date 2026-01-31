@@ -1,0 +1,13 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/envcheck/route": "/api/envcheck",
+  "/api/generate-gemini/route": "/api/generate-gemini",
+  "/api/generate/route": "/api/generate",
+  "/api/transform-gemini/route": "/api/transform-gemini",
+  "/configurator/page": "/configurator",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/",
+  "/products/[slug]/page": "/products/[slug]",
+  "/products/page": "/products"
+}
