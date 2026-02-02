@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     const outPath = path.join(uploadDir, filename);
     await fs.writeFile(outPath, Buffer.from(outB64, "base64"));
 
-    const url = `/uploads/${filename}`;
+    const url = `/public/uploads/${filename}`;
 
     // vrátíme url + id (a b64 klidně pro preview)
     return Response.json({
