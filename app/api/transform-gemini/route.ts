@@ -82,13 +82,13 @@ export async function POST(req: Request) {
     const filename = `${id}.${ext}`;
 
     // uložit do public/uploads
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadDir, { recursive: true });
+const uploadDir = path.join(process.cwd(), "..", "configurator.frensmerch.com", "uploads");
+     await fs.mkdir(uploadDir, { recursive: true });
 
     const outPath = path.join(uploadDir, filename);
     await fs.writeFile(outPath, Buffer.from(outB64, "base64"));
 
-    const url = "/uploads/${filename}";
+    const url = `/uploads/${filename}`;
 
     // vrátíme url + id (a b64 klidně pro preview)
     return Response.json({
