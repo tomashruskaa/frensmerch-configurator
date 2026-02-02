@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     const filename = `${id}.${ext}`;
 
     // uložit do public/uploads
-const uploadDir = path.join(process.cwd(), "..", "configurator.frensmerch.com", "uploads");
+const uploadDir = path.join(process.cwd(), "public", "uploads");
      await fs.mkdir(uploadDir, { recursive: true });
 
     const outPath = path.join(uploadDir, filename);
