@@ -88,7 +88,7 @@ const uploadDir = path.join(process.cwd(), "public", "uploads");
     const outPath = path.join(uploadDir, filename);
     await fs.writeFile(outPath, Buffer.from(outB64, "base64"));
 
-    const url = `/uploads/${filename}`;
+const url = `https://configurator.frensmerch.com/frensmerch-configurator/public/uploads/${filename}`;
 
     // vrátíme url + id (a b64 klidně pro preview)
     return Response.json({
