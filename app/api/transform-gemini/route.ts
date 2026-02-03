@@ -24,42 +24,41 @@ export async function POST(req: Request) {
 
     const customPrompt = String(form.get("customPrompt") || "").trim();
 
-
     const styleMap: Record<string, string> = {
       simpsons: "Simpsons-style cartoon portrait, flat colors, thick outlines.",
       anime: "Anime portrait, clean lineart, vibrant colors.",
       tokyo: "Tokyo Revengers-style anime portrait, dramatic lighting.",
       pixar: "3D animated film look, soft lighting, detailed shading.",
       gta: [
-  "Rockstar Games / GTA V official key art illustration style (NOT anime).",
-  "Clean vector-like ink lines, sharp edges, cel-shaded painting, high contrast.",
-  "Cinematic warm sunset lighting, vibrant Miami/Vice City palette.",
-  "Poster composition, dramatic but realistic proportions (no big anime eyes).",
-  "Face and identity must match the original photo exactly.",
-  "NO text, NO logos, NO game UI, NO watermarks, NO captions.",
-  "Background: simplified city street with palm trees and art-deco buildings OR simple gradient if uncertain."
-].join(" "),
+        "Rockstar Games / GTA V official key art illustration style (NOT anime).",
+        "Clean vector-like ink lines, sharp edges, cel-shaded painting, high contrast.",
+        "Cinematic warm sunset lighting, vibrant Miami/Vice City palette.",
+        "Poster composition, dramatic but realistic proportions (no big anime eyes).",
+        "Face and identity must match the original photo exactly.",
+        "NO text, NO logos, NO game UI, NO watermarks, NO captions.",
+        "Background: simplified city street with palm trees and art-deco buildings OR simple gradient if uncertain."
+      ].join(" "),
     };
 
     const prompt =
-  `Transform the person in the input photo into this style: ${styleMap[style] || styleMap.anime}. ` +
-  `Keep the same identity, face features, hairstyle and pose. ` +
-  `Do not change clothing unless requested. ` +
-  `Output: a single image only. ` +
-  `Hard rules: NO text, NO UI/HUD, NO borders, NO watermarks, NO logos. ` +
-  (customPrompt ? `Additional instructions: ${customPrompt}` : "");
-
+      `Transform the person in the input photo into this style: ${styleMap[style] || styleMap.anime}. ` +
+      `Keep the same identity, face features, hairstyle and pose. ` +
+      `Do not change clothing unless requested. ` +
+      `Output: a single image only. ` +
+      `Hard rules: NO text, NO UI/HUD, NO borders, NO watermarks, NO logos. ` +
+      (customPrompt ? `Additional instructions: ${customPrompt}` : "");
 
     const ai = new GoogleGenAI({ apiKey });
 
+    // Používáme tvůj specifikovaný model Gemini
     const resp: any = await ai.models.generateContent({
-      model: "gemini-2.5-flash-image",
-      contents: {
+      model: "gemini-2.0-flash-exp", 
+      contents: [{
         parts: [
           { text: prompt },
           { inlineData: { mimeType, data: b64in } },
         ],
-      },
+      }],
     });
 
     const parts = resp?.candidates?.[0]?.content?.parts ?? [];
@@ -72,7 +71,6 @@ export async function POST(req: Request) {
     const outMime = imgPart.inlineData.mimeType ?? "image/png";
     const outB64 = imgPart.inlineData.data as string;
 
-    // vyber příponu podle mime
     const ext =
       outMime.includes("png") ? "png" :
       (outMime.includes("jpeg") || outMime.includes("jpg")) ? "jpg" :
@@ -81,19 +79,23 @@ export async function POST(req: Request) {
     const id = crypto.randomUUID();
     const filename = `${id}.${ext}`;
 
-    // uložit do public/uploads
-const uploadDir = path.join(process.cwd(), "public", "uploads");
-     await fs.mkdir(uploadDir, { recursive: true });
+    // Uložení na disk (ponecháno pro jistotu, i když to Namecheap blokuje)
+    try {
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadDir, { recursive: true });
+      const outPath = path.join(uploadDir, filename);
+      await fs.writeFile(outPath, Buffer.from(outB64, "base64"));
+    } catch (err) {
+      console.error("Disk save failed, continuing with Base64 only");
+    }
 
-    const outPath = path.join(uploadDir, filename);
-    await fs.writeFile(outPath, Buffer.from(outB64, "base64"));
+    // TA NEJDŮLEŽITĚJŠÍ ZMĚNA:
+    // Místo URL odkazu vracíme Base64 datový řetězec, který funguje VŽDY
+    const base64Url = `data:${outMime};base64,${outB64}`;
 
-const url = `https://configurator.frensmerch.com/frensmerch-configurator/public/uploads/${filename}`;
-
-    // vrátíme url + id (a b64 klidně pro preview)
     return Response.json({
       id,
-      url,
+      url: base64Url, // Order draft teď dostane přímo data obrázku
       mime: outMime,
       b64: outB64,
       style,
